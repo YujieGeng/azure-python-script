@@ -10,16 +10,17 @@ from bs4 import BeautifulSoup
 def extract_case_ids_from_email(subject, folder_path, output_file_name, output_path):
     outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
 
-    #Default folder is the inbox, you can change it to any other folder you want to search in
-
     if folder_path is not None:
     # Split the folder path and navigate to the specific folder
         folders = folder_path.split("\\")
         folders = [folder for folder in folders if folder]
-        folder = outlook.Folders.Item(2)
-        
+
+        #get current outlook login user email address
+        emailAddress = outlook.Session.CurrentUser.AddressEntry.GetExchangeUser().PrimarySmtpAddress
+
+        folder = outlook.Folders.Item(emailAddress)
+
         for subfolder in folders:
-            
             folder = folder.Folders.Item(subfolder)
         messages = folder.Items
 
@@ -34,7 +35,7 @@ def extract_case_ids_from_email(subject, folder_path, output_file_name, output_p
 
 
     if messages.Count > 0:
-        message = messages.GetLast()
+        message = messages.GetFirst()
         # Get the last message in the filtered list
         # Extract the HTML body content
         html_body = message.HTMLBody
@@ -65,7 +66,7 @@ if __name__ == "__main__" :
     parser = argparse.ArgumentParser(description="Extract case IDs from Outlook emails.")
     parser.add_argument("--subject", type=str, default="Cx Story Max A", help="Subject of the email to filter.")
     parser.add_argument("--folderPath", type=str, default="Inbox", help="Name of the Outlook folder to search.Default is Inbox. otherwise Specify the folder path.")
-    parser.add_argument("--outputFileName", type=str, default="case_ids.txt", help="Output file name.")
+    parser.add_argument("--outputFileName", type=str, default="case_ids", help="Output file name.")
     parser.add_argument("--outputPath", type=str, default=f"{os.getcwd()}", help="Default is current working directory,Output file path.")
     logging.basicConfig(level=logging.INFO, format='%(asctime)s:%(levelname)s:%(message)s')
     args = parser.parse_args()
