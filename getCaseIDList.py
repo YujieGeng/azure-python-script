@@ -51,15 +51,25 @@ def extract_case_ids_from_email(subject, folder_path, output_file_name, output_p
             # Add the found IDs to the case_ids list
             case_ids.extend(ids)
 
-  
-        #save file to args.outputPath with the name args.outputFileName with txt extension
-        with open(f"{output_path}/{output_file_name}.txt", "w") as file:
+
+        if output_path.endswith("\\"):
+            output_path = output_path[:-1]
+        
+        if not os.path.exists(output_path):
+            print(f"Output path '{output_path}' does not exist. Creating directory...")
+            os.makedirs(output_path)
+   
+        if "." not in output_file_name:
+            # If no extension, add .txt
+            output_file_name += ".txt"
+
+        with open(f"{output_path}\\{output_file_name}", "w") as file:
             for case_id in case_ids:
                 file.write(f"{case_id},\n")
 
     logging.info("Case IDs extracted successfully.")
     logging.info(f"Number of case IDs extracted: {len(case_ids)}")
-    logging.info(f"Case IDs saved to {output_path}/{output_file_name}")
+    logging.info(f"Case IDs saved to {output_path}\\{output_file_name}")
 
 
 if __name__ == "__main__" : 
